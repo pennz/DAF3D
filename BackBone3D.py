@@ -2,7 +2,6 @@ from torch import nn
 from ResNeXt3D import ResNeXt3D
 from ResNeXt3D import ResNeXtBottleneck
 
-
 class BackBone3D(nn.Module):
     def __init__(self):
         super(BackBone3D, self).__init__()
