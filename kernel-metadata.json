@@ -1,11 +1,11 @@
 {
   "id": "k1gaggle/daf2d",
   "title": "DAF2D",
-  "code_file": "DAF2d.ipynb",
+  "code_file": "DAF2D.ipynb",
   "language": "python",
   "kernel_type": "notebook",
   "is_private": true,
-  "enable_gpu": true,
+  "enable_gpu": false,
   "enable_internet": true,
   "keywords": [],
   "dataset_sources": [
