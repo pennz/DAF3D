@@ -658,7 +658,14 @@ if __name__ == "__main__":
 
     print(os.listdir("../input"))
     subprocess.run(
-        r"""bash -c 'source ~/.bashrc ; git clone --depth=1 https://github.com/pennz/DAF3D && cd DAF3D && mv * .* .. && gdrive download 11XnBpIo8bEofmKLuJLxy3nJo4H5dkNfB; cd ..; mkdir models; mv *pth models;' """,
+        r"""
+        bash -x -c '
+                git clone --depth=1 https://github.com/pennz/DAF3D ;
+                cd DAF3D && mv * .* .. ;
+                gdrive --service-account a.json download 11XnBpIo8bEofmKLuJLxy3nJo4H5dkNfB;
+                cd ..;
+                mkdir models; mv *pth models;'
+        """,
         shell=True,
     )
 
