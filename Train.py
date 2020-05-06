@@ -15,6 +15,7 @@ from fastai.core import *
 from fastai.torch_core import *
 from fastai.vision import *
 from fastai.vision.learner import cnn_config, create_head, num_features_model
+
 # import torchsnooper
 from IPython.core.debugger import set_trace
 from sklearn.model_selection import KFold
@@ -563,13 +564,14 @@ class ps_multi_Loss(nn.Module):
 
 # -
 
+
 def predict_on_test_post_process(self, output, thr=None):  # monkey-patch
     # ### Submission
     # convert predictions to byte type and save
     output_prob = torch.sigmoid(output)
 
     preds_save = (output_prob * 255.0).byte()
-    torch.save(preds_save, 'preds_test.pt')
+    torch.save(preds_save, "preds_test.pt")
 
     output_WIP = output_prob
 
@@ -578,8 +580,9 @@ def predict_on_test_post_process(self, output, thr=None):  # monkey-patch
     output_WIP = (output_WIP > thr).int()
 
     # If any pixels are predicted for an empty mask, the corresponding image gets zero score during evaluation. While prediction of no pixels for an empty mask gives perfect score. Because of this penalty it is resonable to set masks to zero if the number of predicted pixels is small. This trick was quite efective in [Airbus Ship Detection Challenge](https://www.kaggle.com/iafoss/unet34-submission-tta-0-699-new-public-lb).
-    output_WIP[output_WIP.view(
-        output_WIP.shape[0], -1).sum(-1) < self.noise_th, ...] = 0.0
+    output_WIP[
+        output_WIP.view(output_WIP.shape[0], -1).sum(-1) < self.noise_th, ...
+    ] = 0.0
 
     # output_WIP = output_WIP.numpy()
 
@@ -593,7 +596,7 @@ def predict_on_test_post_process(self, output, thr=None):  # monkey-patch
         im = np.asarray(im)
         if debug_trace:
             set_trace()
-        im = im*255  # the mask2rle will use this
+        im = im * 255  # the mask2rle will use this
 
         im_4_rle = np.copy(np.transpose(im))
         if debug_trace:
@@ -641,7 +644,7 @@ def rle2mask(rle, width, height):
     current_position = 0
     for index, start in enumerate(starts):
         current_position += start
-        mask[current_position:current_position+lengths[index]] = 255
+        mask[current_position: current_position + lengths[index]] = 255
         current_position += lengths[index]
 
     return mask.reshape(width, height)
@@ -653,14 +656,11 @@ debug_trace = False
 
 if __name__ == "__main__":
 
-	print(os.listdir("../input"))
-	subprocess.run(r"""git clone --depth=1 https://github.com/pennz/DAF3D && \
-	pushd DAF3D && mv * .* ..) && \
-	gdrive download 11XnBpIo8bEofmKLuJLxy3nJo4H5dkNfB;
-	popd;
-	mkdir models;
-	mv *pth models;
-	""", shell=True)
+    print(os.listdir("../input"))
+    subprocess.run(
+        r"""git clone --depth=1 https://github.com/pennz/DAF3D && pushd DAF3D && mv * .* .. && gdrive download 11XnBpIo8bEofmKLuJLxy3nJo4H5dkNfB; popd; mkdir models; mv *pth models; """,
+        shell=True,
+    )
 
     k = psKernel()
     data = k._get_fold_data(0)
@@ -689,104 +689,104 @@ if __name__ == "__main__":
 
     # for stage 2  slice(1e-6, 1e-2/10)
 
-	if to_train:
-		# learner.recorder.plot(suggestion=True)
-		# learner.recorder.plot(suggestion=True)
-		s1_lr = 1e-4
+    if to_train:
+        # learner.recorder.plot(suggestion=True)
+        # learner.recorder.plot(suggestion=True)
+        s1_lr = 1e-4
 
-		learner.freeze()
-		learner.fit_one_cycle(4, max_lr=s1_lr, wd=0.1)
-		learner.recorder.plot_losses()
-		learner.recorder.plot_metrics()
-		learner.save("dr-stage1")
+        learner.freeze()
+        learner.fit_one_cycle(4, max_lr=s1_lr, wd=0.1)
+        learner.recorder.plot_losses()
+        learner.recorder.plot_metrics()
+        learner.save("dr-stage1")
 
-		learner.unfreeze()
-		# learner.lr_find()
-		# learner.recorder.plot(suggestion=True)
+        learner.unfreeze()
+        # learner.lr_find()
+        # learner.recorder.plot(suggestion=True)
 
-		learner.fit_one_cycle(6, max_lr=slice(1e-6, s1_lr / 5), wd=0.1)
+        learner.fit_one_cycle(6, max_lr=slice(1e-6, s1_lr / 5), wd=0.1)
 
-		learner.recorder.plot_losses()
-		learner.recorder.plot_metrics()
-		learner.save("dr-stage2")
+        learner.recorder.plot_losses()
+        learner.recorder.plot_metrics()
+        learner.save("dr-stage2")
 
-		learner.freeze()
-		learner.fit_one_cycle(4, max_lr=s1_lr / 2, wd=0.1)
-		learner.recorder.plot_losses()
-		learner.recorder.plot_metrics()
-		learner.save("dr-stage1_2")
+        learner.freeze()
+        learner.fit_one_cycle(4, max_lr=s1_lr / 2, wd=0.1)
+        learner.recorder.plot_losses()
+        learner.recorder.plot_metrics()
+        learner.save("dr-stage1_2")
 
-		learner.unfreeze()
-		# learner.lr_find()
-		# learner.recorder.plot(suggestion=True)
+        learner.unfreeze()
+        # learner.lr_find()
+        # learner.recorder.plot(suggestion=True)
 
-		learner.fit_one_cycle(6, max_lr=slice(1e-6, s1_lr / 10), wd=0.1)
+        learner.fit_one_cycle(6, max_lr=slice(1e-6, s1_lr / 10), wd=0.1)
 
-		learner.recorder.plot_losses()
-		learner.recorder.plot_metrics()
-		learner.save("dr-stage2_2")
+        learner.recorder.plot_losses()
+        learner.recorder.plot_metrics()
+        learner.save("dr-stage2_2")
 
-		learner.freeze()
-		learner.fit_one_cycle(4, max_lr=s1_lr / 4, wd=0.1)
-		learner.recorder.plot_losses()
-		learner.recorder.plot_metrics()
-		learner.save("dr-stage1_2")
+        learner.freeze()
+        learner.fit_one_cycle(4, max_lr=s1_lr / 4, wd=0.1)
+        learner.recorder.plot_losses()
+        learner.recorder.plot_metrics()
+        learner.save("dr-stage1_2")
 
-		learner.unfreeze()
-		# learner.lr_find()
-		# learner.recorder.plot(suggestion=True)
+        learner.unfreeze()
+        # learner.lr_find()
+        # learner.recorder.plot(suggestion=True)
 
-		learner.fit_one_cycle(6, max_lr=slice(1e-6, s1_lr / 20), wd=0.1)
+        learner.fit_one_cycle(6, max_lr=slice(1e-6, s1_lr / 20), wd=0.1)
 
-		learner.recorder.plot_losses()
-		learner.recorder.plot_metrics()
-		learner.save("dr-stage2_2")
+        learner.recorder.plot_losses()
+        learner.recorder.plot_metrics()
+        learner.save("dr-stage2_2")
 
-		learner.freeze()
-		learner.fit_one_cycle(4, max_lr=s1_lr / 5, wd=0.1)
-		learner.recorder.plot_losses()
-		learner.recorder.plot_metrics()
-		learner.save("dr-stage1_2")
+        learner.freeze()
+        learner.fit_one_cycle(4, max_lr=s1_lr / 5, wd=0.1)
+        learner.recorder.plot_losses()
+        learner.recorder.plot_metrics()
+        learner.save("dr-stage1_2")
 
-		learner.unfreeze()
-		# learner.lr_find()
-		# learner.recorder.plot(suggestion=True)
+        learner.unfreeze()
+        # learner.lr_find()
+        # learner.recorder.plot(suggestion=True)
 
-		learner.fit_one_cycle(6, max_lr=slice(1e-6, s1_lr / 25), wd=0.1)
+        learner.fit_one_cycle(6, max_lr=slice(1e-6, s1_lr / 25), wd=0.1)
 
-		learner.recorder.plot_losses()
-		learner.recorder.plot_metrics()
-		learner.save("dr-stage2_2")
-		learner.freeze()
-		learner.fit_one_cycle(4, max_lr=s1_lr / 5, wd=0.1)
-		learner.recorder.plot_losses()
-		learner.recorder.plot_metrics()
-		learner.save("dr-stage1_2")
+        learner.recorder.plot_losses()
+        learner.recorder.plot_metrics()
+        learner.save("dr-stage2_2")
+        learner.freeze()
+        learner.fit_one_cycle(4, max_lr=s1_lr / 5, wd=0.1)
+        learner.recorder.plot_losses()
+        learner.recorder.plot_metrics()
+        learner.save("dr-stage1_2")
 
-		learner.unfreeze()
-		# learner.lr_find()
-		# learner.recorder.plot(suggestion=True)
+        learner.unfreeze()
+        # learner.lr_find()
+        # learner.recorder.plot(suggestion=True)
 
-		learner.fit_one_cycle(6, max_lr=slice(1e-6, s1_lr / 25), wd=0.1)
+        learner.fit_one_cycle(6, max_lr=slice(1e-6, s1_lr / 25), wd=0.1)
 
-		learner.recorder.plot_losses()
-		learner.recorder.plot_metrics()
-		learner.save("dr-stage2_2")
-		learner.freeze()
-		learner.fit_one_cycle(4, max_lr=s1_lr / 5, wd=0.1)
-		learner.recorder.plot_losses()
-		learner.recorder.plot_metrics()
-		learner.save("dr-stage1_2")
+        learner.recorder.plot_losses()
+        learner.recorder.plot_metrics()
+        learner.save("dr-stage2_2")
+        learner.freeze()
+        learner.fit_one_cycle(4, max_lr=s1_lr / 5, wd=0.1)
+        learner.recorder.plot_losses()
+        learner.recorder.plot_metrics()
+        learner.save("dr-stage1_2")
 
-		learner.unfreeze()
-		# learner.lr_find()
-		# learner.recorder.plot(suggestion=True)
+        learner.unfreeze()
+        # learner.lr_find()
+        # learner.recorder.plot(suggestion=True)
 
-		learner.fit_one_cycle(6, max_lr=slice(1e-6, s1_lr / 25), wd=0.1)
+        learner.fit_one_cycle(6, max_lr=slice(1e-6, s1_lr / 25), wd=0.1)
 
-		learner.recorder.plot_losses()
-		learner.recorder.plot_metrics()
-		learner.save("dr-stage2_2")
+        learner.recorder.plot_losses()
+        learner.recorder.plot_metrics()
+        learner.save("dr-stage2_2")
     # net = DAF3D()
 
     # optimizer = torch.optim.Adam(net.parameters(), lr=1e-3)
@@ -870,103 +870,108 @@ if __name__ == "__main__":
     #    torch.save(net.state_dict(), 'checkpoints/Best_Dice.pth')
 
     # torch.save(net.state_dict(), 'checkpoints/model_{}.pth'.format(epoch))
-	else:
-		learner.load('dr-stage1_2')
-		k.learn.model.eval()
+    else:
+        learner.load("dr-stage1_2")
+        k.learn.model.eval()
 
-		k.learn.data
+        k.learn.data
 
-		k.learn = learner  # !!! set learner here
+        k.learn = learner  # !!! set learner here
 
-		kf = KFold(n_splits=k.nfolds, shuffle=True, random_state=k.SEED)
-		valid_idx = list(kf.split(list(range(len(Path(k.TRAIN).ls())))))[0][1]
-		k.learn.data = (SegmentationItemList.from_folder(k.TRAIN)
-						.split_by_idx(valid_idx)
-						.label_from_func(lambda x: str(x).replace('train', 'masks'), classes=[0, 1])
-						.add_test(Path(k.TEST).ls(), label=None)
-						.databunch(path=Path('.'), bs=k.bs)
-						.normalize(k.stats))
+        kf = KFold(n_splits=k.nfolds, shuffle=True, random_state=k.SEED)
+        valid_idx = list(kf.split(list(range(len(Path(k.TRAIN).ls())))))[0][1]
+        k.learn.data = (
+            SegmentationItemList.from_folder(k.TRAIN)
+            .split_by_idx(valid_idx)
+            .label_from_func(lambda x: str(x).replace("train", "masks"), classes=[0, 1])
+            .add_test(Path(k.TEST).ls(), label=None)
+            .databunch(path=Path("."), bs=k.bs)
+            .normalize(k.stats)
+        )
 
+        k.learn.data
 
-		k.learn.data
+        k.learn.model.eval()
 
-		k.learn.model.eval()
+        output_WIP = k.learn.get_preds(DatasetType.Test, with_loss=False)
 
-		output_WIP = k.learn.get_preds(DatasetType.Test, with_loss=False)
+        sys.path.insert(0, "../input/siim-acr-pneumothorax-segmentation")
 
+        # !head -n 3  submissio*.csv
 
-		sys.path.insert(0, '../input/siim-acr-pneumothorax-segmentation')
+        predict_on_test_post_process(k, output_WIP[0], thr=0.9)
 
+        ids = [o.stem for o in self.learn.data.test_ds.items]
+        sub_df = pd.DataFrame({"ImageId": ids, "EncodedPixels": rles})
+        sub_df.loc[sub_df.EncodedPixels == "", "EncodedPixels"] = "-1"
+        sub_df.to_csv("submission_.csv", index=False)
 
-# !head -n 3  submissio*.csv
+        sub_df_noT = pd.DataFrame({"ImageId": ids, "EncodedPixels": rlesNoT})
+        sub_df_noT.loc[sub_df.EncodedPixels == "", "EncodedPixels"] = "-1"
+        sub_df_noT.to_csv("submission_not_T_.csv", index=False)
 
-		predict_on_test_post_process(k, output_WIP[0], thr=0.9)
+        print(sub_df.head())
 
-		ids = [o.stem for o in self.learn.data.test_ds.items]
-		sub_df = pd.DataFrame({'ImageId': ids, 'EncodedPixels': rles})
-		sub_df.loc[sub_df.EncodedPixels == '', 'EncodedPixels'] = '-1'
-		sub_df.to_csv('submission_.csv', index=False)
+        k.preds_test.shape
 
-		sub_df_noT = pd.DataFrame({'ImageId': ids, 'EncodedPixels': rlesNoT})
-		sub_df_noT.loc[sub_df.EncodedPixels == '', 'EncodedPixels'] = '-1'
-		sub_df_noT.to_csv('submission_not_T_.csv', index=False)
+        preds, ys = k.learn.get_preds(DatasetType.Valid)
 
+        preds.shape
 
-		print(sub_df.head())
+        preds.max()
 
+        data.valid_ds[3][0].data
 
-		k.preds_test.shape
+        outprobs = torch.sigmoid(preds)
 
-		preds, ys = k.learn.get_preds(DatasetType.Valid)
+        ys.shape
 
-		preds.shape
+        data
 
-		preds.max()
+        # !head -n 6 submission_not_T_.csv submission_.csv
 
-		data.valid_ds[3][0].data
+        # !gdrive upload submission_not_T_.csv
 
-		outprobs = torch.sigmoid(preds)
+        ys.shape
 
-		ys.shape
+        ys.sum((2, 3)).sort(descending=True, dim=0).indices
 
-		data
+        kdata.valid_ds[987][0]
 
-# !head -n 6 submission_not_T_.csv submission_.csv
+        plot_idx[1]
 
-# !gdrive upload submission_not_T_.csv
+        kdata.valid_ds[987][1].data.dtype
 
-		ys.shape
+        ys[987].data.numpy().transpose(1, 2, 0).shape
 
-		ys.sum((2, 3)).sort(descending=True, dim=0).indices
+        outprobs_h = outprobs > 0.9
 
+        outprobs_h.max()
 
-		kdata.valid_ds[987][0]
-
-		plot_idx[1]
-
-		kdata.valid_ds[987][1].data.dtype
-
-		ys[987].data.numpy().transpose(1, 2, 0).shape
-
-		outprobs_h = (outprobs > 0.9)
-
-		outprobs_h.max()
-
-		rows_start = 1500
-		rows_end = 1520
-		plot_idx = ys.sum((2, 3)).sort(
-			descending=True, dim=0).indices[rows_start:rows_end]
-# print(plot_idx)
-		for idx in plot_idx:
-			idd = idx.data.numpy()[0]
-			fig, (ax0, ax1, ax2) = plt.subplots(ncols=3, figsize=(12, 4))
-			ax0.imshow(kdata.valid_ds[idd][0].data.numpy().transpose(1, 2, 0))
-			ax1.imshow(ys[idd].data.numpy().transpose(
-				1, 2, 0).reshape(256, 256), vmin=0, vmax=1)
-			ax2.imshow(outprobs_h[idd].data.numpy().transpose(
-				1, 2, 0).reshape(256, 256), vmin=0, vmax=1)
-			ax1.set_title('Targets')
-			ax2.set_title('Predictions')
+        rows_start = 1500
+        rows_end = 1520
+        plot_idx = (
+            ys.sum((2, 3)).sort(descending=True,
+                                dim=0).indices[rows_start:rows_end]
+        )
+        # print(plot_idx)
+        for idx in plot_idx:
+            idd = idx.data.numpy()[0]
+            fig, (ax0, ax1, ax2) = plt.subplots(ncols=3, figsize=(12, 4))
+            ax0.imshow(kdata.valid_ds[idd][0].data.numpy().transpose(1, 2, 0))
+            ax1.imshow(
+                ys[idd].data.numpy().transpose(1, 2, 0).reshape(256, 256),
+                vmin=0,
+                vmax=1,
+            )
+            ax2.imshow(
+                outprobs_h[idd].data.numpy().transpose(
+                    1, 2, 0).reshape(256, 256),
+                vmin=0,
+                vmax=1,
+            )
+            ax1.set_title("Targets")
+            ax2.set_title("Predictions")
 # -
 
 # gdrive upload submission_not_T_.csv
