@@ -888,7 +888,6 @@ if __name__ == "__main__":
         )
 
         k.learn.data
-
         k.learn.model.eval()
 
         output_WIP = k.learn.get_preds(DatasetType.Test, with_loss=False)
@@ -911,41 +910,23 @@ if __name__ == "__main__":
         print(sub_df.head())
 
         k.preds_test.shape
-
         preds, ys = k.learn.get_preds(DatasetType.Valid)
-
-        preds.shape
-
+        # preds.shape
         preds.max()
-
         data.valid_ds[3][0].data
-
         outprobs = torch.sigmoid(preds)
-
         ys.shape
-
         data
-
         # !head -n 6 submission_not_T_.csv submission_.csv
-
         # !gdrive upload submission_not_T_.csv
-
         ys.shape
-
         ys.sum((2, 3)).sort(descending=True, dim=0).indices
-
         kdata.valid_ds[987][0]
-
         plot_idx[1]
-
         kdata.valid_ds[987][1].data.dtype
-
         ys[987].data.numpy().transpose(1, 2, 0).shape
-
         outprobs_h = outprobs > 0.9
-
         outprobs_h.max()
-
         rows_start = 1500
         rows_end = 1520
         plot_idx = (
