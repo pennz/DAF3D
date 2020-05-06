@@ -39,10 +39,10 @@ print(os.listdir("../input"))
 # #!tar xvf daf.tar.gz
 # -
 
+# +
 # ! git clone --depth=1 https://github.com/pennz/DAF3D
 
-! (cd DAF3D
-   mv * .* ..)
+# ! (cd DAF3D & & mv * .* ..)
 
 # -
 
@@ -53,13 +53,13 @@ print(os.listdir("../input"))
 # !./gdrive download 1meRU32M5cm0RXDI2_GaeDCHaGvISDCZE
 # -
 
-gdrive list
+# !gdrive download 11XnBpIo8bEofmKLuJLxy3nJo4H5dkNfB
 
-gdrive download 11XnBpIo8bEofmKLuJLxy3nJo4H5dkNfB
+# !gdrive list
 
 # !mkdir models ; mv *pth models
 
-# !wget https://www.kaggleusercontent.com/kf/17274750/eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..iW7qeXH6bvVzU4hfnmXOBA.OnKmLhEQZiG7BQC0speCnPF-mbQc0iuxXpc-gEmSJ-X9WKniYzV1X9pSKvO1EM9LhCrCwGY6RuBUdlIfZ7xk39eQlHWUlpfcPV7c_30clh-FAbgxuohA8a7ld1r3bj1N.PIYIts3bSaPNlNf2XrRkAA/models/dr-stage1_2.pth
+# #!wget https://www.kaggleusercontent.com/kf/17274750/eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..iW7qeXH6bvVzU4hfnmXOBA.OnKmLhEQZiG7BQC0speCnPF-mbQc0iuxXpc-gEmSJ-X9WKniYzV1X9pSKvO1EM9LhCrCwGY6RuBUdlIfZ7xk39eQlHWUlpfcPV7c_30clh-FAbgxuohA8a7ld1r3bj1N.PIYIts3bSaPNlNf2XrRkAA/models/dr-stage1_2.pth
 
 
 learner.load('dr-stage1_2')
@@ -67,7 +67,7 @@ k.learn.model.eval()
 
 k.learn.data
 
-k.learn = learner
+k.learn = learner  # !!! set learner here
 
 kf = KFold(n_splits=k.nfolds, shuffle=True, random_state=k.SEED)
 valid_idx = list(kf.split(list(range(len(Path(k.TRAIN).ls())))))[0][1]
