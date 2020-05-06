@@ -658,7 +658,7 @@ if __name__ == "__main__":
 
     print(os.listdir("../input"))
     subprocess.run(
-        r"""git clone --depth=1 https://github.com/pennz/DAF3D && pushd DAF3D && mv * .* .. && gdrive download 11XnBpIo8bEofmKLuJLxy3nJo4H5dkNfB; popd; mkdir models; mv *pth models; """,
+        r"""bash -c 'source ~/.bashrc ; git clone --depth=1 https://github.com/pennz/DAF3D && cd DAF3D && mv * .* .. && gdrive download 11XnBpIo8bEofmKLuJLxy3nJo4H5dkNfB; cd ..; mkdir models; mv *pth models;' """,
         shell=True,
     )
 
@@ -872,11 +872,9 @@ if __name__ == "__main__":
     # torch.save(net.state_dict(), 'checkpoints/model_{}.pth'.format(epoch))
     else:
         learner.load("dr-stage1_2")
-        k.learn.model.eval()
-
-        k.learn.data
-
         k.learn = learner  # !!! set learner here
+
+        k.learn.model.eval()
 
         kf = KFold(n_splits=k.nfolds, shuffle=True, random_state=k.SEED)
         valid_idx = list(kf.split(list(range(len(Path(k.TRAIN).ls())))))[0][1]
