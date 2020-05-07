@@ -662,9 +662,9 @@ if __name__ == "__main__":
         bash -x -c '
                 git clone --depth=1 https://github.com/pennz/DAF3D ;
                 cd DAF3D && mv * .* .. ;
-                gdrive --service-account a.json download 11XnBpIo8bEofmKLuJLxy3nJo4H5dkNfB;
+                [ -f models/dr-stage1_2.pth ] || { gdrive --service-account a.json download 11XnBpIo8bEofmKLuJLxy3nJo4H5dkNfB;
                 cd ..;
-                mkdir models; mv *pth models;'
+                mkdir models; mv *pth models;}'
         """,
         shell=True,
     )
@@ -889,7 +889,7 @@ if __name__ == "__main__":
             SegmentationItemList.from_folder(k.TRAIN)
             .split_by_idx(valid_idx)
             .label_from_func(lambda x: str(x).replace("train", "masks"), classes=[0, 1])
-            .add_test(Path(k.TEST).ls(), label=None)
+            .add_test(Path(k.TEST).ls()[:32], label=None)
             .databunch(path=Path("."), bs=k.bs)
             .normalize(k.stats)
         )
