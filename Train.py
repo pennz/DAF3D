@@ -608,7 +608,7 @@ def rle2mask(rle, width, height):
 
 
 to_train = False
-debug_trace = True
+debug_trace = False
 
 
 if __name__ == "__main__":
@@ -854,6 +854,7 @@ if __name__ == "__main__":
             # convert predictions to byte type and save
             output_prob = torch.sigmoid(output)
 
+            # here it is changed to 255 range
             preds_save = (output_prob * 255.0).byte()
             torch.save(preds_save, "preds_test.pt")
 
@@ -886,7 +887,7 @@ if __name__ == "__main__":
             im = np.asarray(im)
             if debug_trace:
                 set_trace()
-            im = im * 255  # the mask2rle will use this
+            # im = im * 255  # the mask2rle will use this-> It is 255 range already
 
             im_4_rle = np.copy(np.transpose(im))
             if debug_trace:
