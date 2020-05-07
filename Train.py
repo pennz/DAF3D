@@ -289,21 +289,11 @@ class DAF2D(DAF3D):
 
         predict = F.interpolate(predict_undersample, size=x.size()[
                                 2:], mode="bilinear")
-
-        # if self.training:
-        return (
-            predict1_1,
-            predict1_2,
-            predict1_3,
-            predict1_4,
-            predict2_1,
-            predict2_2,
-            predict2_3,
-            predict2_4,
-            predict,
-        )
-        # else:
-        #    return predict
+        if self.training:
+            return predict1_1, predict1_2, predict1_3, predict1_4, \
+                   predict2_1, predict2_2, predict2_3, predict2_4, predict
+        else:
+            return predict
 
 
 class BackBone2D(BackBone3D):
@@ -657,17 +647,6 @@ debug_trace = False
 if __name__ == "__main__":
 
     print(os.listdir("../input"))
-    subprocess.run(
-        r"""
-        bash -x -c '
-                git clone --depth=1 https://github.com/pennz/DAF3D ;
-                cd DAF3D && mv * .* .. ;
-                [ -f models/dr-stage1_2.pth ] || { gdrive --service-account a.json download 11XnBpIo8bEofmKLuJLxy3nJo4H5dkNfB;
-                cd ..;
-                mkdir models; mv *pth models;}'
-        """,
-        shell=True,
-    )
 
     k = psKernel()
     data = k._get_fold_data(0)
