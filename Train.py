@@ -290,8 +290,17 @@ class DAF2D(DAF3D):
         predict = F.interpolate(predict_undersample, size=x.size()[
                                 2:], mode="bilinear")
         if self.training:
-            return predict1_1, predict1_2, predict1_3, predict1_4, \
-                   predict2_1, predict2_2, predict2_3, predict2_4, predict
+            return (
+                predict1_1,
+                predict1_2,
+                predict1_3,
+                predict1_4,
+                predict2_1,
+                predict2_2,
+                predict2_3,
+                predict2_4,
+                predict,
+            )
         else:
             return predict
 
@@ -555,48 +564,6 @@ class ps_multi_Loss(nn.Module):
 # -
 
 
-def predict_on_test_post_process(self, output, thr=None):  # monkey-patch
-    # ### Submission
-    # convert predictions to byte type and save
-    output_prob = torch.sigmoid(output)
-
-    preds_save = (output_prob * 255.0).byte()
-    torch.save(preds_save, "preds_test.pt")
-
-    output_WIP = output_prob
-
-    # Generate rle encodings (images are first converted to the original size)
-    thr = self.best_thr if thr is None else thr
-    output_WIP = (output_WIP > thr).int()
-
-    # If any pixels are predicted for an empty mask, the corresponding image gets zero score during evaluation. While prediction of no pixels for an empty mask gives perfect score. Because of this penalty it is resonable to set masks to zero if the number of predicted pixels is small. This trick was quite efective in [Airbus Ship Detection Challenge](https://www.kaggle.com/iafoss/unet34-submission-tta-0-699-new-public-lb).
-    output_WIP[
-        output_WIP.view(output_WIP.shape[0], -1).sum(-1) < self.noise_th, ...
-    ] = 0.0
-
-    # output_WIP = output_WIP.numpy()
-
-    rles = []
-    rlesNoT = []
-    t = torchvision.transforms.ToPILImage()
-    for p in progress_bar(output_WIP):
-        im = t(p)
-        # p_1_channel=(p.T * 255).astype(np.uint8)
-        im = im.resize((1024, 1024))
-        im = np.asarray(im)
-        if debug_trace:
-            set_trace()
-        im = im * 255  # the mask2rle will use this
-
-        im_4_rle = np.copy(np.transpose(im))
-        if debug_trace:
-            set_trace()
-        rles.append(mask2rle(im_4_rle, 1024, 1024))
-        rlesNoT.append(mask2rle(im, 1024, 1024))
-        del im
-        del im_4_rle
-
-
 def mask2rle(img, width, height):
     rle = []
     lastColor = 0
@@ -641,7 +608,7 @@ def rle2mask(rle, width, height):
 
 
 to_train = False
-debug_trace = False
+debug_trace = True
 
 
 if __name__ == "__main__":
@@ -882,9 +849,54 @@ if __name__ == "__main__":
 
         # !head -n 3  submissio*.csv
 
+        def predict_on_test_post_process(self, output, thr=None):  # monkey-patch
+            # ### Submission
+            # convert predictions to byte type and save
+            output_prob = torch.sigmoid(output)
+
+            preds_save = (output_prob * 255.0).byte()
+            torch.save(preds_save, "preds_test.pt")
+
+            output_WIP = output_prob
+
+            # Generate rle encodings (images are first converted to the original size)
+            thr = self.best_thr if thr is None else thr
+            output_WIP = (output_WIP > thr).int()
+
+            # If any pixels are predicted for an empty mask, the corresponding image gets zero score during evaluation. While prediction of no pixels for an empty mask gives perfect score. Because of this penalty it is resonable to set masks to zero if the number of predicted pixels is small. This trick was quite efective in [Airbus Ship Detection Challenge](https://www.kaggle.com/iafoss/unet34-submission-tta-0-699-new-public-lb).
+            output_WIP[
+                output_WIP.view(
+                    output_WIP.shape[0], -1).sum(-1) < self.noise_th, ...
+            ] = 0.0
+            return output_WIP
+
+        # output_WIP = output_WIP.numpy()
+        if debug_trace:
+            set_trace()
+
         predict_on_test_post_process(k, output_WIP[0], thr=0.9)
 
-        ids = [o.stem for o in self.learn.data.test_ds.items]
+        rles = []
+        rlesNoT = []
+        t = torchvision.transforms.ToPILImage()
+        for p in progress_bar(output_WIP[0]):
+            im = t(p)
+            # p_1_channel=(p.T * 255).astype(np.uint8)
+            im = im.resize((1024, 1024))
+            im = np.asarray(im)
+            if debug_trace:
+                set_trace()
+            im = im * 255  # the mask2rle will use this
+
+            im_4_rle = np.copy(np.transpose(im))
+            if debug_trace:
+                set_trace()
+            rles.append(mask2rle(im_4_rle, 1024, 1024))
+            rlesNoT.append(mask2rle(im, 1024, 1024))
+            del im
+            del im_4_rle
+
+        ids = [o.stem for o in k.learn.data.test_ds.items]
         sub_df = pd.DataFrame({"ImageId": ids, "EncodedPixels": rles})
         sub_df.loc[sub_df.EncodedPixels == "", "EncodedPixels"] = "-1"
         sub_df.to_csv("submission_.csv", index=False)
