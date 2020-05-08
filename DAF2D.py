@@ -27,7 +27,6 @@ from BackBone3D import BackBone3D
 from DAF3D import DAF3D, ASPP_module
 from DataOperate import MySet, get_data_list
 from Utils import DiceLoss, dice_ratio
-import utils
 
 
 class ASPP_module_2d(ASPP_module):

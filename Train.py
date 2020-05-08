@@ -253,9 +253,6 @@ if __name__ == "__main__":
         kf = KFold(n_splits=k.nfolds, shuffle=True, random_state=k.SEED)
         valid_idx = list(kf.split(list(range(len(Path(k.TRAIN).ls())))))[0][1]
 
-        def _get_test_stage2():  # just use database for stage two. Faster!!!
-            pass
-
         k.learn.data = (
             SegmentationItemList.from_folder(k.TRAIN)
             .split_by_idx(valid_idx)  # will use k.nfolds
